@@ -1,0 +1,4 @@
+mkdir downloads
+pip install mysqldb OR pip install pymysql
+pip install jupyterlab
+pip install python-decouple
