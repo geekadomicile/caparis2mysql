@@ -16,6 +16,7 @@ import sys
 import pymysql
 import csv
 from inspect import getargspec
+from unicodedata import normalize
 
 def main(csvfile, table):
 
@@ -41,7 +42,6 @@ def getconn():
     return conn
 
 def loadcsv(cursor, table, filename):
-
     """
     Open a csv file and load it into a sql table.
     Assumptions:
@@ -65,10 +65,8 @@ def loadcsv(cursor, table, filename):
     return
 
 def buildUpdateTableQuery(cursor, table, header):
-    print sys.stdout.encoding
-    html = '\xa0'
-    decoded_str = html.decode("windows-1252")
-    encoded_str = decoded_str.encode("utf8")
+    print(header[0])
+    encoded_str = normalize('NFKD', header[0]).encode('ascii','ignore')
     print(encoded_str)
     print(header)
 
