@@ -1,2 +1,7 @@
 # caparis2mysql
-Import french "Credit Agricole - Paris" bank's check CSV files into mySql database.
+The purpose of this code is to make easy to import into MySQL database of a .csv file generated on https://www.ca-paris.fr website.
+
+## Installation
+1. Create a database with utf8-general-ci collation.
+2. Create a user with all priveleges on database created in 1.
+3. Execute ./install.sh

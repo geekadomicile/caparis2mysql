@@ -87,3 +87,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Configuration files
+settings.env
+db.mysql
+.env
