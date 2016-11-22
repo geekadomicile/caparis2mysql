@@ -48,7 +48,7 @@ def loadcsv(cursor, table, filename):
      - the HEADER_LINE_NUMBER is a header
     """
 
-    f = csv.reader(open(filename))
+    f = csv.reader(open(filename), delimiter=';')
 
     for i in range(HEADER_LINE_NUMBER):
         header = f.next()
@@ -65,10 +65,9 @@ def loadcsv(cursor, table, filename):
     return
 
 def buildUpdateTableQuery(cursor, table, header):
-    print(header[0])
-    encoded_str = normalize('NFKD', header[0]).encode('ascii','ignore')
-    print(encoded_str)
-    print(header)
+    string = header[3].decode('latin-1')
+    encoded_str = normalize('NFKD', string).encode('ascii','ignore')
+    print(camelCase(encoded_str))
 
     query = ("create table if not exists %s (id int(12) unsigned not null auto_increment, primary key (id)) engine=InnoDB" % table)
     cursor.execute(query)
@@ -100,6 +99,10 @@ def nullify(L):
             return x
 
     return [f(x) for x in L]
+
+def camelCase(st):
+    output = ''.join(x for x in st.title() if x.isalpha())
+    return output[0].lower() + output[1:]
 
 if __name__ == '__main__':
     # commandline execution
