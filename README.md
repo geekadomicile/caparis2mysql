@@ -3,6 +3,6 @@ The purpose of this code is to make easy to import into MySQL database of a .csv
 
 ## Installation
 1. Create a database with utf8-general-ci collation.
-2. Create a user with all priveleges on database created in 1.
+2. Create a user with all privileges on database created in 1.
 3. Execute ./install.sh
 4. Put your .csv file in download dir.
