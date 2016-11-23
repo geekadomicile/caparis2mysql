@@ -20,7 +20,7 @@ from sqlTools import *
 from dateutil.parser import parse
 import hashlib
 
-def main(csvfile):
+def main(*csvfile):
 
     try:
         conn = getconn()
@@ -30,7 +30,8 @@ def main(csvfile):
 
     cursor = conn.cursor()
 
-    loadcsv(cursor, TABLE_RELEVE_NAME, csvfile)
+    for f in csvfile:
+        loadcsv(cursor, TABLE_RELEVE_NAME, f)
 
     cursor.close()
     conn.commit()
