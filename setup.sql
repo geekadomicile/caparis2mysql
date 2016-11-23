@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS `releve` (
   `id` int(12) UNSIGNED NOT NULL,
   `date` date NOT NULL,
   `dateValeur` date NOT NULL,
-  `liebelle` varchar(128) NOT NULL,
-  `debitEuros` double NOT NULL,
-  `creditEuros` double NOT NULL
+  `liebelle` varchar(256) NOT NULL,
+  `debitEuros` double NULL,
+  `creditEuros` double NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --

@@ -17,8 +17,9 @@ import csv
 from inspect import getargspec
 import re
 from sqlTools import *
+from dateutil.parser import parse
 
-def main(csvfile, table):
+def main(csvfile):
 
     try:
         conn = getconn()
@@ -28,7 +29,7 @@ def main(csvfile, table):
 
     cursor = conn.cursor()
 
-    loadcsv(cursor, table, csvfile)
+    loadcsv(cursor, TABLE_RELEVE_NAME, csvfile)
 
     cursor.close()
     conn.close()
@@ -43,17 +44,18 @@ def loadcsv(cursor, table, filename):
 
     for i in range(HEADER_LINE_NUMBER):
         header = f.next()
-    # remove last delimiter
+    # remove last char
     header = header[:-1]
     numfields = len(header)
-
-    updateTable(cursor, table, header, numfields)
+    print header
 
     query = buildInsertQuery(table, numfields)
 
     for line in f:
         line = line[:-1]
-        vals = nullify(normalizeDecimalMark(line))
+        # Normalize vals
+        vals = normalizeDate(normalizeDecimalMark(nullify(line)))
+        vals = padArguments(vals,numfields)
         print vals
         cursor.execute(query, vals)
 
@@ -62,34 +64,56 @@ def loadcsv(cursor, table, filename):
 def buildInsertQuery(table, numfields):
     """
     Create a query string with the given table name and the right
-    number of format placeholders.
+    number of format placeholders (including id column set to default).
     example:
-    >>> buildInsertCmd("foo", 3)
+    >>> buildInsertQuery("foo", 3)
     'insert into foo values (%s, %s, %s)'
     """
     assert(numfields > 0)
     placeholders = (numfields-1) * "%s, " + "%s"
-    query = ("insert into %s" % table) + (" values (%s)" % placeholders)
+    query = ("insert into %s" % table) + (" values (default, %s)" % placeholders)
     return query
 
 def nullify(L):
-    """Convert empty strings in the given list to None."""
+    """Decode and Convert empty strings in the given list to NULL."""
 
     # helper function
     def f(x):
         if(x == ""):
             return None
         else:
-            return x
+            return x.decode('latin-1')
 
     return [f(x) for x in L]
+
+def padArguments(L, numfields):
+    """Extend List to numfields length."""
+    return L + [None] * (numfields - len(L))
+
+def normalizeDate(L):
+    """Convert DD/MM/YYYY in YYYY-MM-DD."""
+    pattern = re.compile("^[0-3][0-9]/[0-1][0-9]/[0-9]{4}$")
+
+    # helper function
+    def f(pattern, x):
+        if(x and pattern.match(x)):
+            return parse(x, dayfirst=True)
+        else:
+            return x
+
+    return [f(pattern, x) for x in L]
 
 def normalizeDecimalMark(L):
     """Convert decimal mark ',' in '.'"""
     decmark_reg = re.compile('(?<=\d),(?=\d)')
+
     # helper function
     def f(decmark_reg, x):
-        return decmark_reg.sub('.',x)
+        if(x):
+            return decmark_reg.sub('.',x)
+        else:
+            return x
+
     return [f(decmark_reg, x) for x in L]
 
 if __name__ == '__main__':
@@ -99,7 +123,7 @@ if __name__ == '__main__':
     mainArgsLen = len(getargspec(main).args)
 
     if(len(args) < mainArgsLen):
-        print "error: " + str(len(args)) + " out of " + str(mainArgsLen) + "    Usage: " + sys.argv[0] + "csvfile table"
+        print "error: " + str(len(args)) + " out of " + str(mainArgsLen) + "    Usage: " + sys.argv[0] + "csvfile"
         sys.exit(1)
 
     main(*args)

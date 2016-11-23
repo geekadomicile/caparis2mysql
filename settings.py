@@ -23,3 +23,6 @@ DATABASES = {
 HEADER_LINE_NUMBER = config('HEADER_LINE_NUMBER', default=0, cast=int)
 
 SETUP_SQL_SCRIPT = BASE_DIR.child(config('SETUP_SQL_SCRIPT', default='setup.sql'))
+
+# Warning : Update .sql file accordingly
+TABLE_RELEVE_NAME = config('TABLE_RELEVE_NAME', default='releve')
