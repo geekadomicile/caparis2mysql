@@ -13,10 +13,10 @@
 
 from settings import *
 import sys
-import pymysql
 import csv
 from inspect import getargspec
-from unicodedata import normalize
+import re
+from sqlTools import *
 
 def main(csvfile, table):
 
@@ -33,45 +33,29 @@ def main(csvfile, table):
     cursor.close()
     conn.close()
 
-def getconn():
-    conn = pymysql.connect( host     = DATABASES['default']['HOST'],
-                            port     = DATABASES['default']['PORT'],
-                            user     = DATABASES['default']['USER'],
-                            passwd   = DATABASES['default']['PASSWORD'],
-                            db       = DATABASES['default']['NAME'])
-    return conn
-
 def loadcsv(cursor, table, filename):
     """
     Open a csv file and load it into a sql table.
     Assumptions:
      - the HEADER_LINE_NUMBER is a header
     """
-
     f = csv.reader(open(filename), delimiter=';')
 
     for i in range(HEADER_LINE_NUMBER):
         header = f.next()
+    # remove last delimiter
+    header = header[:-1]
     numfields = len(header)
 
-    buildUpdateTableQuery(cursor, table, header)
+    updateTable(cursor, table, header, numfields)
 
     query = buildInsertQuery(table, numfields)
 
     for line in f:
-        vals = nullify(line)
+        line = line[:-1]
+        vals = nullify(normalizeDecimalMark(line))
+        print vals
         cursor.execute(query, vals)
-
-    return
-
-def buildUpdateTableQuery(cursor, table, header):
-    string = header[3].decode('latin-1')
-    encoded_str = normalize('NFKD', string).encode('ascii','ignore')
-    print(camelCase(encoded_str))
-
-    query = ("create table if not exists %s (id int(12) unsigned not null auto_increment, primary key (id)) engine=InnoDB" % table)
-    cursor.execute(query)
-    result = cursor.fetchone()
 
     return
 
@@ -100,9 +84,13 @@ def nullify(L):
 
     return [f(x) for x in L]
 
-def camelCase(st):
-    output = ''.join(x for x in st.title() if x.isalpha())
-    return output[0].lower() + output[1:]
+def normalizeDecimalMark(L):
+    """Convert decimal mark ',' in '.'"""
+    decmark_reg = re.compile('(?<=\d),(?=\d)')
+    # helper function
+    def f(decmark_reg, x):
+        return decmark_reg.sub('.',x)
+    return [f(decmark_reg, x) for x in L]
 
 if __name__ == '__main__':
     # commandline execution
@@ -111,7 +99,7 @@ if __name__ == '__main__':
     mainArgsLen = len(getargspec(main).args)
 
     if(len(args) < mainArgsLen):
-        print "error: " + str(len(args)) + " out of " + str(mainArgsLen) + " arguments: csvfile table"
+        print "error: " + str(len(args)) + " out of " + str(mainArgsLen) + "    Usage: " + sys.argv[0] + "csvfile table"
         sys.exit(1)
 
     main(*args)

@@ -22,7 +22,4 @@ DATABASES = {
 
 HEADER_LINE_NUMBER = config('HEADER_LINE_NUMBER', default=0, cast=int)
 
-if(DEBUG):
-    print("Debug is enabled, here what's retreived in settings.py file :")
-    print(DATABASES['default'])
-    print("End of settings.py file.")
+SETUP_SQL_SCRIPT = BASE_DIR.child(config('SETUP_SQL_SCRIPT', default='setup.sql'))
