@@ -18,6 +18,7 @@ from inspect import getargspec
 import re
 from sqlTools import *
 from dateutil.parser import parse
+import hashlib
 
 def main(csvfile):
 
@@ -48,16 +49,15 @@ def loadcsv(cursor, table, filename):
     # remove last char
     header = header[:-1]
     numfields = len(header)
-    print header
 
     query = buildInsertQuery(table, numfields)
 
     for line in f:
-        line = line[:-1]
         # Normalize vals
+        line = line[:-1]
         vals = normalizeDate(normalizeDecimalMark(nullifyAndDecode(line)))
         vals = padArguments(vals,numfields)
-        print vals
+        vals = addHash(vals)
         cursor.execute(query, vals)
 
     return
@@ -65,14 +65,14 @@ def loadcsv(cursor, table, filename):
 def buildInsertQuery(table, numfields):
     """
     Create a query string with the given table name and the right
-    number of format placeholders (including id column set to default).
+    number of format placeholders (including id set to default and hash columns).
     example:
     >>> buildInsertQuery("foo", 3)
     'insert into foo values (%s, %s, %s)'
     """
     assert(numfields > 0)
     placeholders = (numfields-1) * "%s, " + "%s"
-    query = ("insert into %s" % table) + (" values (default, %s)" % placeholders)
+    query = ("insert ignore into %s" % table) + (" values (default, %s, %%s)" % placeholders)
     return query
 
 def nullifyAndDecode(L):
@@ -90,6 +90,10 @@ def nullifyAndDecode(L):
 def padArguments(L, numfields):
     """Extend List to numfields length."""
     return L + [None] * (numfields - len(L))
+
+def addHash(L):
+    """Add unique hash of itself."""
+    return L + [u'' + hashlib.sha224(str(L)).hexdigest()]
 
 def normalizeDate(L):
     """Convert DD/MM/YYYY in YYYY-MM-DD."""
