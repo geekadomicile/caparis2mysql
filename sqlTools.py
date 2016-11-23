@@ -2,7 +2,8 @@ from settings import *
 import pymysql
 
 def getconn():
-    conn = pymysql.connect( host     = DATABASES['default']['HOST'],
+    conn = pymysql.connect( charset  = 'utf8',
+                            host     = DATABASES['default']['HOST'],
                             port     = DATABASES['default']['PORT'],
                             user     = DATABASES['default']['USER'],
                             passwd   = DATABASES['default']['PASSWORD'],

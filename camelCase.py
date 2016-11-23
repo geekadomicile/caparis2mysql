@@ -1,3 +1,5 @@
+from unicodedata import normalize
+
 def latin2CamelCase(st):
     assert(len(st) > 0)
     string = st.decode('latin-1')

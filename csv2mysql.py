@@ -32,6 +32,7 @@ def main(csvfile):
     loadcsv(cursor, TABLE_RELEVE_NAME, csvfile)
 
     cursor.close()
+    conn.commit()
     conn.close()
 
 def loadcsv(cursor, table, filename):
@@ -54,7 +55,7 @@ def loadcsv(cursor, table, filename):
     for line in f:
         line = line[:-1]
         # Normalize vals
-        vals = normalizeDate(normalizeDecimalMark(nullify(line)))
+        vals = normalizeDate(normalizeDecimalMark(nullifyAndDecode(line)))
         vals = padArguments(vals,numfields)
         print vals
         cursor.execute(query, vals)
@@ -74,7 +75,7 @@ def buildInsertQuery(table, numfields):
     query = ("insert into %s" % table) + (" values (default, %s)" % placeholders)
     return query
 
-def nullify(L):
+def nullifyAndDecode(L):
     """Decode and Convert empty strings in the given list to NULL."""
 
     # helper function
