@@ -17,6 +17,10 @@ find . -type f -print0 | xargs -0 chmod 0644 # for files
 find ./run.py -type f -print0 | xargs -0 chmod 0744 # for files
 find ./setup.py -type f -print0 | xargs -0 chmod 0744 # for files
 
+# Uncomment while debugging
+cp .env default.env
+
+# Set default environment settings
 cp default.env .env
 
 # Setup database
